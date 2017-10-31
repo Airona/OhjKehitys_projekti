@@ -36,7 +36,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .and()
       .formLogin()
           .loginPage("/login")
-          .defaultSuccessUrl("/example.html")
+          .defaultSuccessUrl("/react.html")
           .permitAll()
           .and()
       .logout()
@@ -45,12 +45,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-    	auth
-    		.inMemoryAuthentication()
-    			.withUser("user").password("userpw").roles("USER");
-    	auth
-		.inMemoryAuthentication()
-			.withUser("admin").password("adminpw").roles("ADMIN");
-//    	auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
+//    	auth
+//    		.inMemoryAuthentication()
+//    			.withUser("user").password("userpw").roles("USER");
+//    	auth
+//		.inMemoryAuthentication()
+//			.withUser("admin").password("adminpw").roles("ADMIN");
+    	auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 }
