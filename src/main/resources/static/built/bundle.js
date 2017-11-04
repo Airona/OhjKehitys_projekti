@@ -28825,17 +28825,12 @@ var Home = function (_Component) {
 				_react2.default.createElement(
 					'h2',
 					null,
-					'HELLO'
+					'Welcome'
 				),
 				_react2.default.createElement(
 					'p',
 					null,
-					'Cras facilisis urna ornare ex volutpat, et convallis erat elementum. Ut aliquam, ipsum vitae gravida suscipit, metus dui bibendum est, eget rhoncus nibh metus nec massa. Maecenas hendrerit laoreet augue nec molestie. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.'
-				),
-				_react2.default.createElement(
-					'p',
-					null,
-					'Duis a turpis sed lacus dapibus elementum sed eu lectus.'
+					'Kuvia'
 				)
 			);
 		}
