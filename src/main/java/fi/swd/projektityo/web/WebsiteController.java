@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import fi.swd.projektityo.domain.CloudStorageHelper;
 import fi.swd.projektityo.domain.Image;
 import fi.swd.projektityo.domain.ImageRepository;
 
@@ -17,20 +18,27 @@ public class WebsiteController {
 	
 	@Autowired
 	private ImageRepository repository;
-	
+	private CloudStorageHelper firebase = new CloudStorageHelper();
+
+//requests
     @RequestMapping(value = "/login")
-    public String login() {	
-        return "login";
+    public String login() {
+        return "/login";
     }
-	
+
+    @RequestMapping(value = "/blob", method = RequestMethod.GET)
+    public String createBlob() {
+    	firebase.createSampleBlob();
+        return "/index";
+    }
 //Rest methods
 	
-	@RequestMapping(value = "/Images", method = RequestMethod.GET)
+	@RequestMapping(value = "/images", method = RequestMethod.GET)
 	public @ResponseBody List<Image> ImagelistJson() {
 		return (List<Image>) repository.findAll();
 	}
 	
-	@RequestMapping (value = "/Image/{id}", method = RequestMethod.GET)
+	@RequestMapping (value = "/image/{id}", method = RequestMethod.GET)
 	public @ResponseBody Image getImageJson(@PathVariable("id") Long ImageId) {
 		return repository.findOne(ImageId);
 	}
