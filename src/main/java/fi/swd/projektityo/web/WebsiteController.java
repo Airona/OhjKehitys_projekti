@@ -26,9 +26,27 @@ public class WebsiteController {
         return "/login";
     }
 
-    @RequestMapping(value = "/blob", method = RequestMethod.GET)
+    @RequestMapping(value = "/wblob", method = RequestMethod.GET)
     public String createBlob() {
     	firebase.createSampleBlob();
+        return "/index";
+    }
+    
+    @RequestMapping(value = "/ublob", method = RequestMethod.GET)
+    public String updateBlob() {
+    	firebase.updateSampleBlob();
+        return "/index";
+    }
+    
+    @RequestMapping(value = "/rblob", method = RequestMethod.GET)
+    public String readBlob() {
+    	firebase.getSampleBlob();
+        return "/index";
+    }
+    
+    @RequestMapping(value = "/getall", method = RequestMethod.GET)
+    public String getall() {
+    	firebase.listBucket();
         return "/index";
     }
 //Rest methods

@@ -36,7 +36,7 @@ const Redirect = window.ReactRouterDOM.Redirect;
 							<ul id="navMain">
 								<li><Link to="/">frontpage</Link></li>
 								<li><Link to="/albums">albums</Link></li>
-								<li><Link to="/latest">latest images</Link></li>
+								<li><Link to="/upload">upload</Link></li>
 							</ul>
 						</nav>
 						<div className="clear"></div>
@@ -64,7 +64,7 @@ const Redirect = window.ReactRouterDOM.Redirect;
 					<Switch>
 						<Route exact path='/' component={Home}/>
 						<Route exact path='/albums' component={Albums}/>
-						<Route exact path='/latest' component={Upload}/>
+						<Route exact path='/upload' component={Upload}/>
 						<Route exact path='/manage' component={Manage}/>
 					</Switch>
 				</main>
@@ -98,6 +98,19 @@ const Redirect = window.ReactRouterDOM.Redirect;
 							<li>Eget erat</li>
 							<li>Id porttitor</li>
 						</ol>
+					</div>
+				);
+			}
+		}
+	/*-----Upload page-----*/
+		class Upload extends Component {
+			render() {
+				return (
+					<div>
+						<form action="" method="post" encType="multipart/form-data">
+							<span>Image:</span><input type="file" /><br />
+							<input type="submit" value="Submit" />
+						</form> 
 					</div>
 				);
 			}
@@ -276,15 +289,6 @@ const Redirect = window.ReactRouterDOM.Redirect;
 						</div>      
 					</div>
 				 
-				);
-			}
-		}
-	/*-----Upload page-----*/
-		class Upload extends Component {
-			render() {
-				return (
-					<div>
-					</div>
 				);
 			}
 		}
