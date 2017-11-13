@@ -22,6 +22,8 @@ public class CloudStorageHelper {
 	private final String bucketName = "reactimages-games.appspot.com";
 	private Storage storage = null;
 	
+//	private static final int BUFFER_SIZE = 2 * 1024 * 1024;
+	
 	public CloudStorageHelper() {
 		setStorage();
 	}

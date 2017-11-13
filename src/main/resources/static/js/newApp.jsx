@@ -103,18 +103,90 @@ const Redirect = window.ReactRouterDOM.Redirect;
 			}
 		}
 	/*-----Upload page-----*/
-		class Upload extends Component {
+		class Upload extends React.Component {
 			render() {
 				return (
 					<div>
-						<form action="" method="post" encType="multipart/form-data">
-							<span>Image:</span><input type="file" /><br />
-							<input type="submit" value="Submit" />
-						</form> 
+						<Uploader />
 					</div>
-				);
+				)
 			}
 		}
+
+		class Uploader extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = {file: '',imagePreviewUrl: ''};
+			}
+
+			_handleSubmit(e) {
+				e.preventDefault();
+				// TODO: do something with -> this.state.file
+				console.log('handle uploading-', this.state.file);
+				
+				var data = new FormData();
+				data.append("file", this.state.file);
+				data.append("name", this.state.file.name);
+
+				fetch("http://localhost:8080/upload", {
+					credentials: 'same-origin',
+					mode: 'no-cors',
+					method: "POST",
+					headers: {
+					"Accept": "application/json",
+					"type": "formData"
+					},
+					body: data
+				}).then(function (response) {
+					if (response.ok) {
+						alert("OK! ");
+					} else if (response.status == 401) {
+						alert("401 ");
+					}
+					}, function (e) {
+						alert("Error submitting form!");
+				});
+			}
+
+			_handleImageChange(e) {
+				e.preventDefault();
+
+				let reader = new FileReader();
+				let file = e.target.files[0];
+
+				reader.onloadend = () => {
+					this.setState({
+					file: file,
+					imagePreviewUrl: reader.result
+					});
+				}
+
+				reader.readAsDataURL(file)
+			}
+
+			render() {
+				let {imagePreviewUrl} = this.state;
+				let $imagePreview = null;
+				if (imagePreviewUrl) {
+					$imagePreview = (<img src={imagePreviewUrl} />);
+				} else {
+					$imagePreview = (<div className="previewText">Please select an Image for Preview</div>);
+				}
+
+				return (
+					<div className="previewComponent">
+						<form onSubmit={(e)=>this._handleSubmit(e)}>
+							<input className="fileInput" type="file" onChange={(e)=>this._handleImageChange(e)} />
+							<button className="submitButton" type="submit" onClick={(e)=>this._handleSubmit(e)}>Upload Image</button>
+						</form>
+						<div className="imgPreview">
+							{$imagePreview}
+						</div>
+					</div>
+				)
+			}
+		}
+		
 	/*-----Manage page-----*/
 		class Manage extends React.Component {
 		  constructor(props) {
