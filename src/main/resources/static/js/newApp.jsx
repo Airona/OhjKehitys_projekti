@@ -19,7 +19,81 @@ const Redirect = window.ReactRouterDOM.Redirect;
 			);
 		}
 	}
+	
+	class Uploader extends React.Component {
+		constructor(props) {
+			super(props);
+			this.state = {file: '',imagePreviewUrl: ''};
+		}
 
+		_handleSubmit(e) {
+			e.preventDefault();
+			// TODO: do something with -> this.state.file
+			console.log('handle uploading-', this.state.file);
+			
+			var data = new FormData();
+			data.append("file", this.state.file);
+			data.append("name", this.state.file.name);
+
+			fetch("http://localhost:8080/upload", {
+				credentials: 'same-origin',
+				mode: 'no-cors',
+				method: "POST",
+				headers: {
+				"Accept": "application/json",
+				"type": "formData"
+				},
+				body: data
+			}).then(function (response) {
+				if (response.ok) {
+					alert("OK! ");
+				} else if (response.status == 401) {
+					alert("401 ");
+				}
+				}, function (e) {
+					alert("Error submitting form!");
+			});
+		}
+
+		_handleImageChange(e) {
+			e.preventDefault();
+
+			let reader = new FileReader();
+			let file = e.target.files[0];
+
+			reader.onloadend = () => {
+				this.setState({
+				file: file,
+				imagePreviewUrl: reader.result
+				});
+			}
+
+			reader.readAsDataURL(file)
+		}
+
+		render() {
+			let {imagePreviewUrl} = this.state;
+			let $imagePreview = null;
+			if (imagePreviewUrl) {
+				$imagePreview = (<img src={imagePreviewUrl} />);
+			} else {
+				$imagePreview = (<div className="previewText">Please select an Image for Preview</div>);
+			}
+
+			return (
+				<div className="previewComponent">
+					<form onSubmit={(e)=>this._handleSubmit(e)}>
+						<input className="fileInput" type="file" onChange={(e)=>this._handleImageChange(e)} />
+						<button className="submitButton" type="submit" onClick={(e)=>this._handleSubmit(e)}>Upload Image</button>
+					</form>
+					<div className="imgPreview">
+						{$imagePreview}
+					</div>
+				</div>
+			)
+		}
+	}
+	
 /*-----COMMON PAGE COMPONENTS-----*/
 	/*-----Header-----*/
 		class Header extends Component {
@@ -30,13 +104,13 @@ const Redirect = window.ReactRouterDOM.Redirect;
 						<nav>
 							<ul id="navControl">
 								<li><a href="/login">login</a></li>
-								<li><Link to="/add">add</Link></li>
-								<li><Link to="/manage">manage</Link></li>
+								<li><a href="/logout">logout</a></li>
+								<li><Link to="/upload">upload - user</Link></li>
+								<li><Link to="/manage">manage - admin</Link></li>
 							</ul>
 							<ul id="navMain">
 								<li><Link to="/">frontpage</Link></li>
-								<li><Link to="/albums">albums</Link></li>
-								<li><Link to="/upload">upload</Link></li>
+								<li><Link to="/browse">browse</Link></li>
 							</ul>
 						</nav>
 						<div className="clear"></div>
@@ -63,7 +137,7 @@ const Redirect = window.ReactRouterDOM.Redirect;
 				<main>
 					<Switch>
 						<Route exact path='/' component={Home}/>
-						<Route exact path='/albums' component={Albums}/>
+						<Route exact path='/browse' component={Browse}/>
 						<Route exact path='/upload' component={Upload}/>
 						<Route exact path='/manage' component={Manage}/>
 					</Switch>
@@ -77,27 +151,19 @@ const Redirect = window.ReactRouterDOM.Redirect;
 				return (
 					<div>
 						<h2>Welcome</h2>
-						<p>Kuvia</p>
+						<p>Welcome text, information of the site</p>
 					</div>
 				);
 			}
 		}
 
-	/*-----Albums Page-----*/
-		class Albums extends Component {
+	/*-----Browse Page-----*/
+		class Browse extends Component {
 			render() {
 				return (
 					<div>
-						<h2>STUFF</h2>
-						<p>Mauris sem velit, vehicula eget sodales vitae,
-						rhoncus eget sapien:</p>
-						<ol>
-							<li>Nulla pulvinar diam</li>
-							<li>Facilisis bibendum</li>
-							<li>Vestibulum vulputate</li>
-							<li>Eget erat</li>
-							<li>Id porttitor</li>
-						</ol>
+						<h2>Browsing page</h2>
+						<p>images all users READ ONLY</p>
 					</div>
 				);
 			}
@@ -107,86 +173,13 @@ const Redirect = window.ReactRouterDOM.Redirect;
 			render() {
 				return (
 					<div>
+						<h2>Upload</h2>
+						<p>Registered USER.level permissions <br />Read,Create</p>
 						<Uploader />
 					</div>
 				)
 			}
 		}
-
-		class Uploader extends React.Component {
-			constructor(props) {
-				super(props);
-				this.state = {file: '',imagePreviewUrl: ''};
-			}
-
-			_handleSubmit(e) {
-				e.preventDefault();
-				// TODO: do something with -> this.state.file
-				console.log('handle uploading-', this.state.file);
-				
-				var data = new FormData();
-				data.append("file", this.state.file);
-				data.append("name", this.state.file.name);
-
-				fetch("http://localhost:8080/upload", {
-					credentials: 'same-origin',
-					mode: 'no-cors',
-					method: "POST",
-					headers: {
-					"Accept": "application/json",
-					"type": "formData"
-					},
-					body: data
-				}).then(function (response) {
-					if (response.ok) {
-						alert("OK! ");
-					} else if (response.status == 401) {
-						alert("401 ");
-					}
-					}, function (e) {
-						alert("Error submitting form!");
-				});
-			}
-
-			_handleImageChange(e) {
-				e.preventDefault();
-
-				let reader = new FileReader();
-				let file = e.target.files[0];
-
-				reader.onloadend = () => {
-					this.setState({
-					file: file,
-					imagePreviewUrl: reader.result
-					});
-				}
-
-				reader.readAsDataURL(file)
-			}
-
-			render() {
-				let {imagePreviewUrl} = this.state;
-				let $imagePreview = null;
-				if (imagePreviewUrl) {
-					$imagePreview = (<img src={imagePreviewUrl} />);
-				} else {
-					$imagePreview = (<div className="previewText">Please select an Image for Preview</div>);
-				}
-
-				return (
-					<div className="previewComponent">
-						<form onSubmit={(e)=>this._handleSubmit(e)}>
-							<input className="fileInput" type="file" onChange={(e)=>this._handleImageChange(e)} />
-							<button className="submitButton" type="submit" onClick={(e)=>this._handleSubmit(e)}>Upload Image</button>
-						</form>
-						<div className="imgPreview">
-							{$imagePreview}
-						</div>
-					</div>
-				)
-			}
-		}
-		
 	/*-----Manage page-----*/
 		class Manage extends React.Component {
 		  constructor(props) {
@@ -364,6 +357,7 @@ const Redirect = window.ReactRouterDOM.Redirect;
 				);
 			}
 		}
+
 /*----RENDER----*/
 ReactDOM.render((
 	<BrowserRouter>

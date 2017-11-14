@@ -1,13 +1,8 @@
 package fi.swd.projektityo.web;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,54 +27,11 @@ public class WebsiteController {
     public String login() {
         return "/login";
     }
-
-    @RequestMapping(value = "/wblob", method = RequestMethod.GET)
-    public String createBlob() {
-    	firebase.createSampleBlob();
-        return "/index";
-    }
-    
-    @RequestMapping(value = "/ublob", method = RequestMethod.GET)
-    public String updateBlob() {
-    	firebase.updateSampleBlob();
-        return "/index";
-    }
-    
-    @RequestMapping(value = "/rblob", method = RequestMethod.GET)
-    public String readBlob() {
-    	firebase.getSampleBlob();
-        return "/index";
-    }
-    
-    @RequestMapping(value = "/getall", method = RequestMethod.GET)
-    public String getall() {
-    	firebase.listBucket();
-        return "/index";
-    }
     
     @RequestMapping(value="/upload", method=RequestMethod.POST)
-    public @ResponseBody ResponseEntity<String>  handleFileUpload(@RequestParam("name") String name,
-            @RequestParam("file") MultipartFile file) throws Exception{
-        if (name.contains("/")) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Folder separators not allowed.");
-        } else if (name.contains("/")) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Relative pathnames not allowed.");
-        }
-
-        if (!file.isEmpty()) {
-            try {
-                byte[] bytes = file.getBytes();
-                BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(new File(name)));
-                stream.write(bytes);
-                stream.close();
-                return ResponseEntity.ok("File " + name + " uploaded.");
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(e.getMessage());
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("You failed to upload " + name + " because the file was empty.");
-        }
+    public @ResponseBody String handleFileUploadB(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
+    	firebase.uploadFile(file, name);
+    	return "";
     }
     
 //Rest methods

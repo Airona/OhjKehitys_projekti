@@ -3,11 +3,20 @@ package fi.swd.projektityo.domain;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.WriteChannel;
+import com.google.cloud.storage.Acl;
+import com.google.cloud.storage.Acl.Role;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -45,7 +54,48 @@ public class CloudStorageHelper {
 		return this.storage;
 	}
 	
+	public void listBucket() {
+		// List all your buckets
+		System.out.println("My buckets:");
+		for (Bucket bucket : storage.list().iterateAll()) {
+		  System.out.println(bucket);
+		  
+		  // List all blobs in the bucket
+		  System.out.println("Blobs in the bucket:");
+		  for (Blob blob : bucket.list().iterateAll()) {
+		    System.out.println(blob);
+		  }
+		}
+	}
 	
+	@SuppressWarnings("deprecation")
+	public String uploadFile(MultipartFile file, String fileName) {
+		DateTimeFormatter dtf = DateTimeFormat.forPattern("-YYYY-MM-dd-HHmmssSSS");
+		DateTime dt = DateTime.now(DateTimeZone.UTC);
+		String dtString = dt.toString(dtf);
+		fileName += dtString;
+
+		try {
+			BlobInfo blobInfo = storage.create(
+					BlobInfo.newBuilder(bucketName, fileName)
+							//Modify access list to allow all users with link to read file
+							.setAcl(new ArrayList<>(Arrays.asList(Acl.of(com.google.cloud.storage.Acl.User.ofAllUsers(), Role.READER))))
+							.build(),
+							file.getInputStream());
+			
+			System.out.println(blobInfo.getMediaLink());
+			// return the public download link
+			return blobInfo.getMediaLink();
+		} catch (Exception e) {
+			System.out.println(e);
+			return "";
+		}		
+	}
+	
+	
+	
+	
+	//sample methods
 	public void createSampleBlob() {
 		// Upload a blob to the newly created bucket
     	BlobId blobId = BlobId.of(bucketName, "Test");
@@ -75,24 +125,5 @@ public class CloudStorageHelper {
 			}		  
 		}
 	}
-	
-	public void listBucket() {
-		// List all your buckets
-		System.out.println("My buckets:");
-		for (Bucket bucket : storage.list().iterateAll()) {
-		  System.out.println(bucket);
-		  
-		  // List all blobs in the bucket
-		  System.out.println("Blobs in the bucket:");
-		  for (Blob blob : bucket.list().iterateAll()) {
-		    System.out.println(blob);
-		  }
-		}
-	}
-	
-	/*public void createBucket() {
-	// Create a bucket
-	storage.create(BucketInfo.of(bucketName));
-	}*/
 	
 }
