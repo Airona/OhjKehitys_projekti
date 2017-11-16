@@ -1,6 +1,10 @@
 package fi.swd.projektityo.domain;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Entity
 public class User {
@@ -27,6 +31,16 @@ public class User {
 
 	public User(String username, String passwordHash, String email, String role) {
 		super();
+		this.username = username;
+		this.passwordHash = passwordHash;
+		this.email = email;
+		this.role = role;
+	}
+	
+	public User(Long id, String username, String passwordHash, String email,
+			String role) {
+		super();
+		this.id = id;
 		this.username = username;
 		this.passwordHash = passwordHash;
 		this.email = email;

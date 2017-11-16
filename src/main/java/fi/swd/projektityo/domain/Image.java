@@ -1,26 +1,43 @@
 package fi.swd.projektityo.domain;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Image {
-	private @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.AUTO) long id;
-	private String game, name, date, url, tags;
+	@JsonIgnore
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, updatable = false)
+	private long id;
+	
+	@Column(name = "gameId", nullable = false)
+	private long gameId;
+	
+	@Column(name = "userId", nullable = false)
+	private long userId;
+	
+	private String name, date;
+	
+	@Column(name = "url", nullable = false)
+	private String url;
 	
 	public Image() {
 		super();
 	}
 
-	public Image(String game, String name, String date, String url,
-			String tags) {
+	public Image(long gameId, long userId, String name, String date, String url) {
 		super();
-		this.game = game;
+		this.gameId = gameId;
+		this.userId = userId;
 		this.name = name;
 		this.date = date;
 		this.url = url;
-		this.tags = tags;		
 	}
 
 	public long getId() {
@@ -31,20 +48,20 @@ public class Image {
 		this.id = id;
 	}
 
-	public String getGame() {
-		return game;
+	public long getGameId() {
+		return gameId;
 	}
 
-	public void setGame(String game) {
-		this.game = game;
+	public void setGameId(long gameId) {
+		this.gameId = gameId;
 	}
 
-	public String getTags() {
-		return tags;
+	public long getUserId() {
+		return userId;
 	}
 
-	public void setTags(String tags) {
-		this.tags = tags;
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
 
 	public String getName() {
@@ -55,14 +72,6 @@ public class Image {
 		this.name = name;
 	}
 
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
 	public String getDate() {
 		return date;
 	}
@@ -71,10 +80,17 @@ public class Image {
 		this.date = date;
 	}
 
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
 	@Override
 	public String toString() {
-		return "Image [id=" + id + ", game=" + game + ", name=" + name
-				+ ", date=" + date + ", url=" + url + ", tags=" + tags + "]";
+		return "Image [id=" + id + ", gameId=" + gameId + ", userId=" + userId
+				+ ", name=" + name + ", date=" + date + ", url=" + url + "]";
 	}
-	
 }

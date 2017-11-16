@@ -6,6 +6,7 @@ const Link =  window.ReactRouterDOM.Link;
 const Prompt =  window.ReactRouterDOM.Prompt;
 const Switch = window.ReactRouterDOM.Switch;
 const Redirect = window.ReactRouterDOM.Redirect;
+const ReactTable = window.ReactTable.default
 
 /*-----MAIN APP-----*/
 	class App extends React.Component {
@@ -105,12 +106,12 @@ const Redirect = window.ReactRouterDOM.Redirect;
 							<ul id="navControl">
 								<li><a href="/login">login</a></li>
 								<li><a href="/logout">logout</a></li>
-								<li><Link to="/upload">upload - user</Link></li>
-								<li><Link to="/manage">manage - admin</Link></li>
 							</ul>
 							<ul id="navMain">
 								<li><Link to="/">frontpage</Link></li>
 								<li><Link to="/browse">browse</Link></li>
+								<li><Link to="/upload">upload(user)</Link></li>
+								<li><Link to="/manage">manage(admin)</Link></li>
 							</ul>
 						</nav>
 						<div className="clear"></div>
@@ -329,29 +330,18 @@ const Redirect = window.ReactRouterDOM.Redirect;
 			render() {
 				return (
 					<div className="panel panel-default">
-						<div className="panel-heading">Create image</div>
-						<div className="panel-body">
+						Create image
 						<form className="form-inline">
 							<div className="col-md-2">
-								<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>    
-							</div>
-							<div className="col-md-2">       
-								<input type="text" placeholder="Name" className="form-control" name="name" onChange={this.handleChange}/>
-							</div>
-							<div className="col-md-2">
-								<input type="text" placeholder="Date" className="form-control" name="date" onChange={this.handleChange}/>
-							</div>
-							<div className="col-md-2">
-								<input type="text" placeholder="url" className="form-control" name="url" onChange={this.handleChange}/>
-							</div>
-							<div className="col-md-2">
+								<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>
+							
 								<input type="text" placeholder="tags" className="form-control" name="tags" onChange={this.handleChange}/>
-							</div>
-							<div className="col-md-2">
+								
+								<Uploader />
+								
 								<button className="btn btn-success" onClick={this.handleSubmit}>Save</button>   
 							</div>        
-						</form>
-						</div>      
+						</form>   
 					</div>
 				 
 				);
