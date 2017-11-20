@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -16,13 +17,19 @@ public class Image {
     @Column(name = "id", nullable = false, updatable = false)
 	private long id;
 	
+	@ManyToOne
 	@Column(name = "gameId", nullable = false)
-	private long gameId;
+	private Game game;
 	
+	@ManyToOne
 	@Column(name = "userId", nullable = false)
-	private long userId;
+	private User user;
 	
-	private String name, date;
+	@Column(name = "name")
+	private String name;
+	
+	@Column(name = "date", nullable = false)
+	private String date;
 	
 	@Column(name = "url", nullable = false)
 	private String url;
@@ -31,10 +38,12 @@ public class Image {
 		super();
 	}
 
-	public Image(long gameId, long userId, String name, String date, String url) {
+	public Image(long id, Game game, User user, String name, String date,
+			String url) {
 		super();
-		this.gameId = gameId;
-		this.userId = userId;
+		this.id = id;
+		this.game = game;
+		this.user = user;
 		this.name = name;
 		this.date = date;
 		this.url = url;
@@ -48,20 +57,20 @@ public class Image {
 		this.id = id;
 	}
 
-	public long getGameId() {
-		return gameId;
+	public Game getGame() {
+		return game;
 	}
 
-	public void setGameId(long gameId) {
-		this.gameId = gameId;
+	public void setGame(Game game) {
+		this.game = game;
 	}
 
-	public long getUserId() {
-		return userId;
+	public User getUser() {
+		return user;
 	}
 
-	public void setUserId(long userId) {
-		this.userId = userId;
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public String getName() {
@@ -90,7 +99,7 @@ public class Image {
 
 	@Override
 	public String toString() {
-		return "Image [id=" + id + ", gameId=" + gameId + ", userId=" + userId
+		return "Image [id=" + id + ", game=" + game + ", user=" + user
 				+ ", name=" + name + ", date=" + date + ", url=" + url + "]";
 	}
 }

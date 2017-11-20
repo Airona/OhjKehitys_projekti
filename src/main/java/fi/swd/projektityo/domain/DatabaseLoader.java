@@ -1,5 +1,7 @@
 package fi.swd.projektityo.domain;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,18 +17,37 @@ public class DatabaseLoader implements CommandLineRunner {
 	
 	
 	private final UserRepository urepository;
-	private final GameRepository grepository;
+	//private final GameRepository grepository;
 	private final ImageRepository irepository;
 	
 	@Autowired
 	public DatabaseLoader(UserRepository urepository, ImageRepository irepository, GameRepository grepository) {
 		this.urepository = urepository;
-		this.grepository = grepository;
+		//this.grepository = grepository;
 		this.irepository = irepository;
 	}
 
 	@Override
+	@Transactional
 	public void run(String... strings) throws Exception {
+		
+		/*example
+		 * 
+		 *	// save a couple of categories
+	        BookCategory categoryA = new BookCategory("Category A");
+	        Set bookAs = new HashSet<Book>(){{
+	            add(new Book("Book A1", categoryA));
+	            add(new Book("Book A2", categoryA));
+	            add(new Book("Book A3", categoryA));
+	        }};
+	        categoryA.setBooks(bookAs);
+		 * 
+		 * 
+		 * 
+		 * */
+		
+		
+		
 		
 		//create users
 		User user1 = new User(1L,"user", "$2a$07$fWtYtMWmjXVHByLa6SqgNeXAVgrVd6oOxDptC95J/t7nSTkxj8d7G", "user@harjoitus", "USER");
@@ -35,13 +56,15 @@ public class DatabaseLoader implements CommandLineRunner {
 		urepository.save(user2);
 		
 		// save examples
-		Game game1 = new Game(1L,"Counter-Strike 1.6");
-		grepository.save(game1);
+		//Game game1 = new Game(1L,"Counter-Strike 1.6");
+		//grepository.save(game1);
 		
-		Image image1 = new Image(1L,1L,"Kuva 1","16/11/2017","https://www.googleapis.com/download/storage/v1/b/reactimages-games.appspot.com/o/3%5B1%5D.jpg-2017-11-16-074739139?generation=1510818459645216&alt=media");
-		Image image2 = new Image(1L,1L,"Kuva 2","16/11/2017","https://www.googleapis.com/download/storage/v1/b/reactimages-games.appspot.com/o/0%5B1%5D.jpg-2017-11-16-074605419?generation=1510818368483454&alt=media");
-		irepository.save(image1);
-		irepository.save(image2);
+//		irepository.save(new Image("Counter-Strike 1.6","user","Kuva 1","2017-11-16-004350118","https://www.googleapis.com/download/storage/v1/b/reactimages-games.appspot.com/o/2017-11-19-004350118-6.jpg?generation=1511052233004029&alt=media"));
+//		irepository.save(new Image("Comic","user","Potato","2017-11-19-000809946","https://www.googleapis.com/download/storage/v1/b/reactimages-games.appspot.com/o/2017-11-19-000809946-Ee0DlD1.png?generation=1511050096184593&alt=media"));
+//		irepository.save(new Image("Counter-Strike 1.6","user","Kuva 2","2017-11-18-004654076","https://www.googleapis.com/download/storage/v1/b/reactimages-games.appspot.com/o/2017-11-19-004654076-9.jpg?generation=1511052417456676&alt=media"));
+//		irepository.save(new Image("Counter-Strike 1.6","user","Kuva 3","2017-11-17-004341373","https://www.googleapis.com/download/storage/v1/b/reactimages-games.appspot.com/o/2017-11-19-004341373-0.jpg?generation=1511052224509095&alt=media"));
+//		irepository.save(new Image("Counter-Strike 1.6","user","Kuva 4","2017-11-19-005237851","https://www.googleapis.com/download/storage/v1/b/reactimages-games.appspot.com/o/2017-11-19-005237851-11.jpg?generation=1511052761207630&alt=media"));
+		
 		
 		// fetch all examples
 		log.info("Examples found with findAll():");
@@ -51,6 +74,7 @@ public class DatabaseLoader implements CommandLineRunner {
 		}
 		log.info("-------------------------------");
 		
-		
+		// fetch all examples
+		log.info("Examples found with findByGame():");
 	}
 }

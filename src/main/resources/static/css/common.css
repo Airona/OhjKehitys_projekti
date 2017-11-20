@@ -67,3 +67,114 @@ footer {
 	}
 }
 
+
+
+/*table and form*/
+.imgPreview img {
+	max-width: 100%;
+	max-height: 200px;
+}
+.table{ /*additional styling on top of bootstrap*/
+	margin-left: 1em;
+	margin-right: 1em;
+}
+
+.formDiv {float:left; width:200px}
+.tableDivWithForm {margin-left:200px; width:auto;}
+
+@media screen and (max-width: 600px) {
+	.formDiv {float:none;}
+}
+
+
+/*modal styling*/
+ /* Style the Image Used to Trigger the Modal */
+#myImg {
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#myImg:hover {opacity: 0.7;}
+
+/* The Modal (background) */
+.modalView {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 2em; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+    text-align: center;
+}
+
+/* Modal Content (Image) */
+.modalView-content {
+    margin: auto;
+    display: block;
+    max-width: calc(100% - 2em);
+	max-height: calc(100% - 3em);
+}
+
+/* Caption of Modal Image (Image Text) - Same Width as the Image */
+#caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+}
+
+/* Add Animation - Zoom in the Modal */
+.modalView-content, #caption {
+    -webkit-animation-name: zoom;
+    -webkit-animation-duration: 0.6s;
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+    from {-webkit-transform:scale(0)}
+    to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+    from {transform:scale(0)}
+    to {transform:scale(1)}
+}
+
+/* The Close Button */
+.closeBt {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.closeBt:hover,
+.closeBt:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.spinner{
+	background-image: url('../img/spinner.gif');
+	padding: 2em;
+	background-size: contain;
+	background-repeat: no-repeat;
+	position: absolute;
+	top: calc(50% - 2em);
+	left: calc(50% - 2em);
+	border-radius: 2em;
+}

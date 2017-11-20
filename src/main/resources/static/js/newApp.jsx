@@ -6,7 +6,22 @@ const Link =  window.ReactRouterDOM.Link;
 const Prompt =  window.ReactRouterDOM.Prompt;
 const Switch = window.ReactRouterDOM.Switch;
 const Redirect = window.ReactRouterDOM.Redirect;
-const ReactTable = window.ReactTable.default
+
+/*toastr options*/
+toastr.options.positionClass = 'toast-top-left';
+toastr.options.progressBar = true;
+
+/*json sorter*/
+function predicateBy(prop){
+   return function(a,b){
+      if( a[prop] > b[prop]){
+          return 1;
+      }else if( a[prop] < b[prop] ){
+          return -1;
+      }
+      return 0;
+   }
+}
 
 /*-----MAIN APP-----*/
 	class App extends React.Component {
@@ -21,15 +36,318 @@ const ReactTable = window.ReactTable.default
 		}
 	}
 	
+	class ModalView extends React.Component {
+		constructor(props) {
+			super(props);
+			this.closeModal = this.closeModal.bind(this);
+			
+			this.state = {
+				show: false,
+				imageUrl: "",
+				imageStatus: "loading",
+				loading: true,
+			}
+		}
+		
+		componentWillReceiveProps(newProps) {
+			if (this.state.show !== newProps.show) {
+				this.setState({show: newProps.show});
+			}
+			
+			if (this.state.imageUrl !== newProps.imageUrl) {
+				this.setState({imageUrl: newProps.imageUrl});
+			}
+		}
+		
+		closeModal() {
+			this.props.close();
+			this.setState({loading: true, imageUrl: ""});
+		}
+		
+		handleImageLoaded() {
+			this.setState({ loading: false });
+		}
+
+		handleImageErrored() {
+			this.setState({ loading: false });
+		}
+
+		renderSpinner() {
+			if (!this.state.loading) {
+				// Render nothing if not loading 
+				return null;
+			}
+			return (
+				<span className="spinner" />
+			);
+		}
+		
+		render() {
+			return(
+				<div className="modalView" style={this.state.show ? {display: 'block'} : {null} } onClick={this.closeModal}>
+					<span className="closeBt" onClick={this.closeModal}>&times;</span>
+					<img
+						className="modalView-content" 
+						src={this.state.imageUrl}
+						onLoad={this.handleImageLoaded.bind(this)}
+						onError={this.handleImageErrored.bind(this)}
+					/>
+					{this.renderSpinner()}
+					<div id="caption">{this.props.caption}</div>
+				</div>
+			);
+		}
+	}
+	
+	class ImageControl extends React.Component {
+		constructor(props) {
+			super(props);
+			this.deleteImage = this.deleteImage.bind(this);
+			this.createImage = this.createImage.bind(this);
+			this.closeView = this.closeView.bind(this);
+			this.openView = this.openView.bind(this);
+			
+			this.state = {
+				images: [],
+				showModalView: false,
+				modalImage: "",
+				modalCaption: ""
+			};
+		}
+		
+		componentDidMount() {
+			this.loadImagesFromServer();
+		}
+		
+		//Modal controls
+		closeView() {
+			this.setState({ showModalView: false });
+		}
+		openView(imageUrl, caption) {
+			this.setState({ showModalView: true,
+							modalImage: imageUrl,
+							modalCaption: caption
+			});
+		}
+		
+		// Load images from database
+		loadImagesFromServer() {
+			fetch('http://localhost:8080/api/images', {credentials: 'same-origin'})
+			.then((response) => response.json())
+			.then((responseData) => {
+				this.setState({
+					images: responseData._embedded.images,
+				});
+			});
+		}
+		
+		// Delete image
+		deleteImage(image) {
+			fetch (image._links.self.href,
+				{method: 'DELETE', credentials: 'same-origin'
+			}).then(
+				res => this.loadImagesFromServer()
+			)
+		}
+	  
+		// Create new image
+		createImage(image) {
+			fetch('http://localhost:8080/api/images', {
+				method: 'POST', credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(image)
+			}).then(
+				res => this.loadImagesFromServer()
+			)
+		}
+		
+		render() {
+			/*show only for user uploads, type=1*/
+			var imageForm;
+			if (this.props.type == 1){
+				imageForm = <ImageForm />
+			}
+			
+			return (
+				<div>
+					{imageForm}
+					<ImageTable
+						deleteImage={this.deleteImage} 
+						images={this.state.images}
+						closeView={this.closeView}
+						openView={this.openView}
+						type={this.props.type}
+					/>
+					<ModalView
+						show={this.state.showModalView}
+						close={this.closeView}
+						imageUrl={this.state.modalImage}
+						caption={this.state.modalCaption}
+					/>
+				</div>
+			);
+		}
+	}
+		
+	class ImageTable extends React.Component {
+		constructor(props) {
+			super(props);
+		}
+		
+		render() {
+			var updateTh;
+			var deleteTh;
+			if (this.props.type == 2){
+				updateTh = (
+					<th></th>
+				);
+				deleteTh = (
+					<th></th>
+				);
+			}
+			
+			//Sorting
+			this.props.images.sort( predicateBy("date") );
+			this.props.images.sort( predicateBy("game") );
+			
+			var images = this.props.images.map(image =>
+				<Image
+					key={image._links.self.href} 
+					image={image}
+					deleteImage={this.props.deleteImage} 
+					closeView={this.props.closeView} 
+					openView={this.props.openView} 
+					type={this.props.type}
+				/>
+			);
+
+			return (
+			<div className={(this.props.type == 1 ? 'tableDivWithForm' : '')}>
+			  <table className="table">
+				<thead>
+				  <tr>
+					<th>Game</th>
+					<th>Name</th>
+					<th>User</th>
+					<th>Date</th>
+					{updateTh}
+					{deleteTh}
+				  </tr>
+				</thead>
+				<tbody>{images}</tbody>
+			  </table>
+			  </div>);
+		}
+	}
+			
+	class Image extends React.Component {
+		constructor(props) {
+			super(props);
+			this.deleteImage = this.deleteImage.bind(this);
+			this.showImage = this.showImage.bind(this);
+		}
+
+		deleteImage(e) {
+			e.stopPropagation();
+			this.props.deleteImage(this.props.image);
+		} 
+		
+		showImage() {
+			console.log(this.props.image.url);
+			this.props.openView(this.props.image.url, this.props.image.name);
+		}
+		
+		render() {
+			var updateBt;
+			var deleteBt;
+			
+			if (this.props.type == 2){
+				updateBt = (
+					<td>
+						<button className="btn btn-success" onClick={this.deleteImage}>Update</button>
+					</td>
+				);
+				deleteBt = (
+					<td>
+						<button className="btn btn-danger" onClick={this.deleteImage}>Delete</button>
+					</td>
+				);
+			}
+			
+			return (
+			  <tr onClick={this.showImage}>
+				<td>{this.props.image.game}</td>
+				<td>{this.props.image.name}</td>
+				<td>{this.props.image.user}</td>
+				<td>{this.props.image.date}</td>
+				{updateBt}
+				{deleteBt}
+			  </tr>
+			);
+		} 
+	}
+
+	class ImageForm extends React.Component {
+		constructor(props) {
+			super(props);
+			this.state = {
+				game: '',
+				name: '',
+				user: '',
+				date: '',
+				url: ''
+			};
+			this.handleSubmit = this.handleSubmit.bind(this);   
+			this.handleChange = this.handleChange.bind(this);     
+		}
+		
+		handleChange(e) {
+			this.setState(
+				{[e.target.name]: e.target.value}
+			);
+		}    
+		
+		handleSubmit(e) {
+			e.preventDefault();
+			var newImage = {
+				game: this.state.game,	/*user input (dropdown) or new as (text)*/
+				name: this.state.name,	/*user input (text)*/
+				user: this.state.user,	/*system logged user*/
+				date: this.state.date,	/*system upload date*/
+				url: this.state.url		/*system image upload (return url)*/
+			};
+			this.props.createImage(newImage);        
+		}
+		
+		render() {
+			return (
+				<div className="panel panel-default formDiv">
+					<span>Upload an image</span>
+					<form className="form">
+						<div>
+							<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>
+						
+							<input type="text" placeholder="Name" className="form-control" name="name" onChange={this.handleChange}/>
+							
+							<button className="btn btn-success" onClick={this.handleSubmit}>Upload</button>   
+						</div>        
+					</form>   
+				</div>
+			 
+			);
+		}
+	}
+	
 	class Uploader extends React.Component {
 		constructor(props) {
 			super(props);
-			this.state = {file: '',imagePreviewUrl: ''};
+			this.state = {file: '', imagePreviewUrl: ''};
 		}
 
 		_handleSubmit(e) {
 			e.preventDefault();
-			// TODO: do something with -> this.state.file
 			console.log('handle uploading-', this.state.file);
 			
 			var data = new FormData();
@@ -47,12 +365,12 @@ const ReactTable = window.ReactTable.default
 				body: data
 			}).then(function (response) {
 				if (response.ok) {
-					alert("OK! ");
+					toastr.success("OK! ");
 				} else if (response.status == 401) {
-					alert("401 ");
+					toastr.error("401 ");
 				}
 				}, function (e) {
-					alert("Error submitting form!");
+					toastr.warning("Error submitting form!");
 			});
 		}
 
@@ -97,7 +415,7 @@ const ReactTable = window.ReactTable.default
 	
 /*-----COMMON PAGE COMPONENTS-----*/
 	/*-----Header-----*/
-		class Header extends Component {
+		class Header extends React.Component {
 			render() {
 				return (
 					<header>
@@ -121,10 +439,10 @@ const ReactTable = window.ReactTable.default
 		}
 
 	/*-----Footer-----*/
-		class Footer extends Component {
+		class Footer extends React.Component {
 			render() {
 				return (
-					<footer>
+					<footer className="clear">
 						<p>Kim Brygger (c)</p>
 					</footer>
 				);
@@ -147,207 +465,58 @@ const ReactTable = window.ReactTable.default
 		}
 	}
 	/*-----Home Page-----*/
-		class Home extends Component {
+		class Home extends React.Component {
 			render() {
 				return (
 					<div>
 						<h2>Welcome</h2>
 						<p>Welcome text, information of the site</p>
+						<br />
+						<p>Create Read Update Delete, New User</p>
 					</div>
 				);
 			}
 		}
 
 	/*-----Browse Page-----*/
-		class Browse extends Component {
+		class Browse extends React.Component {
 			render() {
 				return (
 					<div>
 						<h2>Browsing page</h2>
+						<p>Open images by clicking on the table rows</p>
 						<p>images all users READ ONLY</p>
+						<ImageControl type={0} />
 					</div>
 				);
 			}
 		}
-	/*-----Upload page-----*/
+		
+	/*-----Upload page--user---*/
 		class Upload extends React.Component {
 			render() {
 				return (
 					<div>
 						<h2>Upload</h2>
-						<p>Registered USER.level permissions <br />Read,Create</p>
-						<Uploader />
+						<p>Registered USER.level permissions <br />Read,Create,Delete,(Update)</p>
+						<ImageControl type={1} />
 					</div>
 				)
 			}
 		}
-	/*-----Manage page-----*/
+	/*-----Manage page--admin---*/
 		class Manage extends React.Component {
-		  constructor(props) {
-			  super(props);
-			  this.deleteImage = this.deleteImage.bind(this);
-			  this.createImage = this.createImage.bind(this);
-			  this.state = {
-				  images: [],
-			  };
-		   }
-		 
-		  componentDidMount() {
-			this.loadImagesFromServer();
-		  }
-		  
-		  // Load images from database
-		  loadImagesFromServer() {
-			  fetch('http://localhost:8080/api/images', {credentials: 'same-origin'}) 
-			  .then((response) => response.json()) 
-			  .then((responseData) => { 
-				  this.setState({ 
-					  images: responseData._embedded.images, 
-				  }); 
-			  });     
-		  } 
-		  
-		  // Delete image
-		  deleteImage(image) {
-			  fetch (image._links.self.href,
-			  {method: 'DELETE', credentials: 'same-origin'})
-			  .then( 
-				  res => this.loadImagesFromServer()
-			  )             
-		  }  
-		  
-		  // Create new image
-		  createImage(image) {
-			  fetch('http://localhost:8080/api/images', {
-				  method: 'POST', credentials: 'same-origin',
-				  headers: {
-					'Content-Type': 'application/json',
-				  },
-				  body: JSON.stringify(image)
-			  })
-			  .then( 
-				  res => this.loadImagesFromServer()
-			  )
-		  }
-		  
-		  render() {
-			return (
-			   <div>
-				  <ImageForm createImage={this.createImage}/>
-				  <ImageTable deleteImage={this.deleteImage} images={this.state.images}/> 
-			   </div>
-			);
-		  }
-		}
-				
-		class ImageTable extends React.Component {
-			constructor(props) {
-				super(props);
-			}
-			
-			render() {
-			var images = this.props.images.map(image =>
-				<Image key={image._links.self.href} image={image} deleteImage={this.props.deleteImage}/>
-			);
-
-			return (
-			  <div>
-			  <table className="table table-striped">
-				<thead>
-				  <tr>
-					<th>Game</th>
-					<th>Name</th>
-					<th>Date</th>
-					<th>url</th>
-					<th>tags</th>
-					<th></th>
-				  </tr>
-				</thead>
-				<tbody>{images}</tbody>
-			  </table>
-			  </div>);
-		  }
-		}
-				
-		class Image extends React.Component {
-			constructor(props) {
-				super(props);
-				this.deleteImage = this.deleteImage.bind(this);
-			}
-
-			deleteImage() {
-				this.props.deleteImage(this.props.image);
-			} 
-		 
 			render() {
 				return (
-				  <tr>
-					<td>{this.props.image.game}</td>
-					<td>{this.props.image.name}</td>
-					<td>{this.props.image.date}</td>
-					<td>{this.props.image.url}</td>
-					<td>{this.props.image.tags}</td>
-					<td>
-						<button className="btn btn-danger" onClick={this.deleteImage}>Delete</button>
-					</td>
-				  </tr>
-				);
-			} 
-		}
-
-		class ImageForm extends React.Component {
-			constructor(props) {
-				super(props);
-				this.state = {
-					game: '',
-					name: '',
-					date: '',
-					url: '',
-					tags: ''
-				};
-				this.handleSubmit = this.handleSubmit.bind(this);   
-				this.handleChange = this.handleChange.bind(this);     
-			}
-
-			handleChange(event) {
-				this.setState(
-					{[event.target.name]: event.target.value}
-				);
-			}    
-			
-			handleSubmit(event) {
-				event.preventDefault();
-				var newImage = {
-					game: this.state.game,
-					name: this.state.name,
-					date: this.state.date,
-					url: this.state.url,
-					tags: this.state.tags
-				};
-				this.props.createImage(newImage);        
-			}
-			
-			render() {
-				return (
-					<div className="panel panel-default">
-						Create image
-						<form className="form-inline">
-							<div className="col-md-2">
-								<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>
-							
-								<input type="text" placeholder="tags" className="form-control" name="tags" onChange={this.handleChange}/>
-								
-								<Uploader />
-								
-								<button className="btn btn-success" onClick={this.handleSubmit}>Save</button>   
-							</div>        
-						</form>   
+					<div>
+						<h2>Manage</h2>
+						<p>Admin.level permissions <br />Read,Create</p>
+						<ImageControl type={2} />
 					</div>
-				 
-				);
+				)
 			}
 		}
-
+	
 /*----RENDER----*/
 ReactDOM.render((
 	<BrowserRouter>

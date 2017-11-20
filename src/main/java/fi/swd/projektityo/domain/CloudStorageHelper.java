@@ -71,7 +71,7 @@ public class CloudStorageHelper {
 	@SuppressWarnings("deprecation")
 	public String uploadFile(MultipartFile file, String fileName) {
 		//add date to name to keep unique names...
-		DateTimeFormatter dtf = DateTimeFormat.forPattern("-YYYY-MM-dd-HHmmssSSS");
+		DateTimeFormatter dtf = DateTimeFormat.forPattern("YYYY-MM-dd-HHmmssSSS-");
 		DateTime dt = DateTime.now(DateTimeZone.UTC);
 		String dtString = dt.toString(dtf);
 		fileName = dtString + fileName;
