@@ -11,19 +11,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Image {
-	@JsonIgnore
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
-	@ManyToOne
-	@Column(name = "gameId", nullable = false)
-	private Game game;
+	@Column(name = "game", nullable = false)
+	private String game;
 	
-	@ManyToOne
-	@Column(name = "userId", nullable = false)
-	private User user;
+	@Column(name = "user", nullable = false)
+	private String user;
 	
 	@Column(name = "name")
 	private String name;
@@ -38,10 +34,8 @@ public class Image {
 		super();
 	}
 
-	public Image(long id, Game game, User user, String name, String date,
-			String url) {
+	public Image(String game, String user, String name, String date, String url) {
 		super();
-		this.id = id;
 		this.game = game;
 		this.user = user;
 		this.name = name;
@@ -57,19 +51,19 @@ public class Image {
 		this.id = id;
 	}
 
-	public Game getGame() {
+	public String getGame() {
 		return game;
 	}
 
-	public void setGame(Game game) {
+	public void setGame(String game) {
 		this.game = game;
 	}
 
-	public User getUser() {
+	public String getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(String user) {
 		this.user = user;
 	}
 
@@ -99,7 +93,8 @@ public class Image {
 
 	@Override
 	public String toString() {
-		return "Image [id=" + id + ", game=" + game + ", user=" + user
-				+ ", name=" + name + ", date=" + date + ", url=" + url + "]";
+		return "Image [id=" + id + ", game=" + game + ", user=" + user + ", name=" + name + ", date=" + date + ", url="
+				+ url + "]";
 	}
+	
 }

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import fi.swd.projektityo.domain.CloudStorageHelper;
-import fi.swd.projektityo.domain.Game;
 import fi.swd.projektityo.domain.Image;
 import fi.swd.projektityo.domain.ImageRepository;
 
