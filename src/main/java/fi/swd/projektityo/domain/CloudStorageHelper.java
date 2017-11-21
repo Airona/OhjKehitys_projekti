@@ -69,12 +69,12 @@ public class CloudStorageHelper {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public String uploadFile(MultipartFile file, String fileName) {
+	public Image uploadFile(MultipartFile file, String fileName) {
 		//add date to name to keep unique names...
-		DateTimeFormatter dtf = DateTimeFormat.forPattern("YYYY-MM-dd-HHmmssSSS-");
+		DateTimeFormatter dtf = DateTimeFormat.forPattern("YYYY-MM-dd-HHmmssSSS");
 		DateTime dt = DateTime.now(DateTimeZone.UTC);
 		String dtString = dt.toString(dtf);
-		fileName = dtString + fileName;
+		fileName = dtString + "-" + fileName;
 
 		try {
 			BlobInfo blobInfo = storage.create(
@@ -84,12 +84,14 @@ public class CloudStorageHelper {
 							.build(),
 							file.getInputStream());
 			
-			System.out.println(blobInfo.getMediaLink());
 			// return the public download link
-			return blobInfo.getMediaLink();
+			System.out.println(blobInfo.getMediaLink());
+			String url = blobInfo.getMediaLink();
+			Image image = new Image(dtString,url);
+			return image;
 		} catch (Exception e) {
 			System.out.println(e);
-			return "";
+			return null;
 		}		
 	}
 	

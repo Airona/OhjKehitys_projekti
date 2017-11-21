@@ -151,23 +151,55 @@ function predicateBy(prop){
 		}
 	  
 		// Create new image
-		createImage(image) {
-			fetch('http://localhost:8080/api/images', {
-				method: 'POST', credentials: 'same-origin',
+		createImage(data ,image) {
+			fetch("http://localhost:8080/upload", {
+				credentials: 'same-origin',
+				mode: 'no-cors',
+				method: "POST",
 				headers: {
-					'Content-Type': 'application/json',
+				"Accept": "application/json",
+				"type": "formData"
 				},
-				body: JSON.stringify(image)
+				body: data
 			}).then(
-				res => this.loadImagesFromServer()
-			)
+				(response) => response.json()
+			).then(
+				(responseData) => {
+					console.log(image);
+					image {
+						date: responseData._embedded.images.date,
+						url: responseData._embedded.images.url
+					};
+					console.log(image);
+				}
+			).then(
+				fetch('http://localhost:8080/api/images', {
+					method: 'POST', credentials: 'same-origin',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(image)
+				}).then(
+					res => this.loadImagesFromServer()
+				)
+			).then(
+				function (response) {
+					if (response.ok) {
+						toastr.success("OK! ");
+					} else if (response.status == 401) {
+						toastr.error("401 ");
+					}
+					}, function (e) {
+						toastr.warning("Error submitting form! <br/>" + e);
+					}
+			);
 		}
 		
 		render() {
 			/*show only for user uploads, type=1*/
 			var imageForm;
 			if (this.props.type == 1){
-				imageForm = <ImageForm />
+				imageForm = <ImageForm createImage={this.createImage}/>
 			}
 			
 			return (
@@ -297,10 +329,29 @@ function predicateBy(prop){
 				name: '',
 				user: '',
 				date: '',
-				url: ''
+				url: '',
+				
+				file: '',
+				imagePreviewUrl: '',
 			};
 			this.handleSubmit = this.handleSubmit.bind(this);   
 			this.handleChange = this.handleChange.bind(this);     
+		}
+		
+		handleImageChange(e) {
+			e.preventDefault();
+
+			let reader = new FileReader();
+			let file = e.target.files[0];
+
+			reader.onloadend = () => {
+				this.setState({
+					file: file,
+					imagePreviewUrl: reader.result
+				});
+			}
+
+			reader.readAsDataURL(file)
 		}
 		
 		handleChange(e) {
@@ -311,6 +362,10 @@ function predicateBy(prop){
 		
 		handleSubmit(e) {
 			e.preventDefault();
+			var data = new FormData();
+			data.append("file", this.state.file);
+			data.append("name", this.state.file.name);
+			
 			var newImage = {
 				game: this.state.game,	/*user input (dropdown) or new as (text)*/
 				name: this.state.name,	/*user input (text)*/
@@ -318,24 +373,35 @@ function predicateBy(prop){
 				date: this.state.date,	/*system upload date*/
 				url: this.state.url		/*system image upload (return url)*/
 			};
-			this.props.createImage(newImage);        
+			
+			console.log('handle uploading-', this.state.file);
+			this.props.createImage(data, newImage);        
 		}
 		
 		render() {
+			let {imagePreviewUrl} = this.state;
+			let $imagePreview = null;
+			if (imagePreviewUrl) {
+				$imagePreview = (<img src={imagePreviewUrl} />);
+			} else {
+				$imagePreview = (<div className="previewText">Please select an Image for Preview</div>);
+			}
+			
 			return (
 				<div className="panel panel-default formDiv">
 					<span>Upload an image</span>
 					<form className="form">
-						<div>
 							<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>
-						
 							<input type="text" placeholder="Name" className="form-control" name="name" onChange={this.handleChange}/>
+							<input className="fileInput" type="file" onChange={(e)=>this.handleImageChange(e)} />
 							
 							<button className="btn btn-success" onClick={this.handleSubmit}>Upload</button>   
-						</div>        
+							
+							<div className="imgPreview">
+								{$imagePreview}
+							</div>    
 					</form>   
 				</div>
-			 
 			);
 		}
 	}
@@ -348,8 +414,6 @@ function predicateBy(prop){
 
 		_handleSubmit(e) {
 			e.preventDefault();
-			console.log('handle uploading-', this.state.file);
-			
 			var data = new FormData();
 			data.append("file", this.state.file);
 			data.append("name", this.state.file.name);
@@ -382,8 +446,8 @@ function predicateBy(prop){
 
 			reader.onloadend = () => {
 				this.setState({
-				file: file,
-				imagePreviewUrl: reader.result
+					file: file,
+					imagePreviewUrl: reader.result
 				});
 			}
 

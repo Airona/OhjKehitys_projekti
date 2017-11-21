@@ -29,9 +29,8 @@ public class WebsiteController {
     }
     
     @RequestMapping(value="/upload", method=RequestMethod.POST)
-    public @ResponseBody String handleFileUpload(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
-    	firebase.uploadFile(file, name);
-    	return "";
+    public @ResponseBody Image handleFileUpload(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
+    	return firebase.uploadFile(file, name); 
     }
     
 //unnecessary Rest methods

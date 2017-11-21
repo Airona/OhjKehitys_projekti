@@ -24,10 +24,8 @@ public class Image {
 	@Column(name = "name")
 	private String name;
 	
-	@Column(name = "date", nullable = false)
 	private String date;
 	
-	@Column(name = "url", nullable = false)
 	private String url;
 	
 	public Image() {
@@ -39,6 +37,12 @@ public class Image {
 		this.game = game;
 		this.user = user;
 		this.name = name;
+		this.date = date;
+		this.url = url;
+	}
+
+	public Image(String date, String url) {
+		super();
 		this.date = date;
 		this.url = url;
 	}
