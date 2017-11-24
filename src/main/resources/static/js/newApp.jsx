@@ -72,7 +72,7 @@ function predicateBy(prop){
 			this.setState({ loading: false });
 		}
 
-		renderSpinner() {
+		renderSpinner() { // TODO some issue with loading spinner?
 			if (!this.state.loading) {
 				// Render nothing if not loading 
 				return null;
@@ -151,7 +151,7 @@ function predicateBy(prop){
 		}
 	  
 		// Create new image
-		createImage(data ,image) {
+		createImage(data ,image) {	//not optimal
 			fetch("http://localhost:8080/upload", {
 				credentials: 'same-origin',
 				mode: 'no-cors',
@@ -161,38 +161,42 @@ function predicateBy(prop){
 				"type": "formData"
 				},
 				body: data
-			}).then(
-				(response) => response.json()
-			).then(
-				(responseData) => {
-					console.log(image);
-					image {
-						date: responseData._embedded.images.date,
-						url: responseData._embedded.images.url
-					};
-					console.log(image);
+			}).then((response) => response.json()
+			).then((responseData) => {
+						console.log(image);
+						console.log(responseData.date);
+						console.log(responseData.url);
+					image.date = responseData.date;
+					image.url = responseData.url;
+						console.log("----");
+						console.log(image);
+					return image;
 				}
-			).then(
-				fetch('http://localhost:8080/api/images', {
-					method: 'POST', credentials: 'same-origin',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(image)
-				}).then(
-					res => this.loadImagesFromServer()
-				)
-			).then(
+			).then((image) => {
+					fetch('http://localhost:8080/api/images', {
+						method: 'POST', credentials: 'same-origin',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(image)
+					}).then(() => {this.loadImagesFromServer();})
+				}
+			);
+			
+			/*
+			.then(
 				function (response) {
 					if (response.ok) {
 						toastr.success("OK! ");
 					} else if (response.status == 401) {
 						toastr.error("401 ");
 					}
-					}, function (e) {
-						toastr.warning("Error submitting form! <br/>" + e);
-					}
-			);
+				}, function (e) {
+					toastr.warning("Error submitting form! <br/>" + e);
+				}
+			)
+			*/
+			
 		}
 		
 		render() {
@@ -287,7 +291,6 @@ function predicateBy(prop){
 		} 
 		
 		showImage() {
-			console.log(this.props.image.url);
 			this.props.openView(this.props.image.url, this.props.image.name);
 		}
 		
@@ -406,77 +409,16 @@ function predicateBy(prop){
 		}
 	}
 	
-	class Uploader extends React.Component {
-		constructor(props) {
-			super(props);
-			this.state = {file: '', imagePreviewUrl: ''};
-		}
-
-		_handleSubmit(e) {
-			e.preventDefault();
-			var data = new FormData();
-			data.append("file", this.state.file);
-			data.append("name", this.state.file.name);
-
-			fetch("http://localhost:8080/upload", {
-				credentials: 'same-origin',
-				mode: 'no-cors',
-				method: "POST",
-				headers: {
-				"Accept": "application/json",
-				"type": "formData"
-				},
-				body: data
-			}).then(function (response) {
-				if (response.ok) {
-					toastr.success("OK! ");
-				} else if (response.status == 401) {
-					toastr.error("401 ");
-				}
-				}, function (e) {
-					toastr.warning("Error submitting form!");
-			});
-		}
-
-		_handleImageChange(e) {
-			e.preventDefault();
-
-			let reader = new FileReader();
-			let file = e.target.files[0];
-
-			reader.onloadend = () => {
-				this.setState({
-					file: file,
-					imagePreviewUrl: reader.result
-				});
-			}
-
-			reader.readAsDataURL(file)
-		}
-
+	class Categories extends React.Component { //TODO & implementation
 		render() {
-			let {imagePreviewUrl} = this.state;
-			let $imagePreview = null;
-			if (imagePreviewUrl) {
-				$imagePreview = (<img src={imagePreviewUrl} />);
-			} else {
-				$imagePreview = (<div className="previewText">Please select an Image for Preview</div>);
-			}
-
 			return (
-				<div className="previewComponent">
-					<form onSubmit={(e)=>this._handleSubmit(e)}>
-						<input className="fileInput" type="file" onChange={(e)=>this._handleImageChange(e)} />
-						<button className="submitButton" type="submit" onClick={(e)=>this._handleSubmit(e)}>Upload Image</button>
-					</form>
-					<div className="imgPreview">
-						{$imagePreview}
-					</div>
+				<div>
+					display all unique game names (clickable), <br/>
+					Asks to return all specific images under game's name.
 				</div>
-			)
+			);
 		}
 	}
-	
 /*-----COMMON PAGE COMPONENTS-----*/
 	/*-----Header-----*/
 		class Header extends React.Component {
@@ -486,6 +428,7 @@ function predicateBy(prop){
 						<a href="#" id="logo"></a>
 						<nav>
 							<ul id="navControl">
+								<li><a href="/register">register</a></li>
 								<li><a href="/login">login</a></li>
 								<li><a href="/logout">logout</a></li>
 							</ul>

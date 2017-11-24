@@ -28,6 +28,11 @@ public class WebsiteController {
         return "/login";
     }
     
+    @RequestMapping(value = "/register")
+    public String signup() {
+        return "/signup";
+    }
+    
     @RequestMapping(value="/upload", method=RequestMethod.POST)
     public @ResponseBody Image handleFileUpload(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
     	return firebase.uploadFile(file, name); 

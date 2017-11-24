@@ -70,6 +70,9 @@ footer {
 
 
 /*table and form*/
+tbody tr {
+    background: linear-gradient(white, #d5d5d5);
+}
 .imgPreview img {
 	max-width: 100%;
 	max-height: 200px;
