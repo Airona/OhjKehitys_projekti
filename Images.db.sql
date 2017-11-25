@@ -7,16 +7,10 @@ CREATE TABLE User
 ,PRIMARY KEY (id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE Game
-(id int unsigned NOT NULL AUTO_INCREMENT
-,title varchar(255) NOT NULL
-,PRIMARY KEY (id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE Image
 (id int unsigned NOT NULL AUTO_INCREMENT
-,gameId int unsigned NOT NULL
-,userId int unsigned NOT NULL
+,game int unsigned NOT NULL
+,username int unsigned NOT NULL
 ,name varchar(1024) DEFAULT NULL
 ,uploadDate varchar(1024) NOT NULL
 ,url varchar(1024) NOT NULL

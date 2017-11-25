@@ -163,13 +163,8 @@ function predicateBy(prop){
 				body: data
 			}).then((response) => response.json()
 			).then((responseData) => {
-						console.log(image);
-						console.log(responseData.date);
-						console.log(responseData.url);
 					image.date = responseData.date;
 					image.url = responseData.url;
-						console.log("----");
-						console.log(image);
 					return image;
 				}
 			).then((image) => {
@@ -428,7 +423,7 @@ function predicateBy(prop){
 						<a href="#" id="logo"></a>
 						<nav>
 							<ul id="navControl">
-								<li><a href="/register">register</a></li>
+								<li><a href="/signup">signup</a></li>
 								<li><a href="/login">login</a></li>
 								<li><a href="/logout">logout</a></li>
 							</ul>

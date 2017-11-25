@@ -15,6 +15,10 @@ a:hover {
 	color:#AF58C4 !important;
 }
 
+.securityForm {
+	text-align:center;
+}
+
 /*styling*/
 header {
 	width:100%;
