@@ -10,13 +10,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import fi.swd.projektityo.domain.CloudStorageHelper;
 import fi.swd.projektityo.domain.Image;
@@ -123,15 +123,16 @@ public class WebsiteController {
 		} catch (Exception e) {}
 		if (username == null){
 			System.out.println(username);
-			username = "guest";
+			username = "guest";// :D
 		}
 		
 		additionalInformation.setUser(username);
 		return additionalInformation;
     }
-    
-//React catch all (must be last to catch, TODO edit to match only possible pages)
-	@RequestMapping(value = {"*"}, method = RequestMethod.GET)
+
+//React catch
+	//@RequestMapping(value = {"*"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"", "browse", "upload", "manage"}, method = RequestMethod.GET)
   	public String index(HttpServletRequest httpServletRequest) {
   		return "/index";
 	}

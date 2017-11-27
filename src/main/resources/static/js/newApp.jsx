@@ -109,6 +109,7 @@ function predicateBy(prop){
 			
 			this.state = {
 				show: false,
+				image: null,
 				
 				game: '',
 				name: '',
@@ -117,10 +118,24 @@ function predicateBy(prop){
 				url: '',
 			};
 		}
-		
+
 		componentWillReceiveProps(newProps) {
 			if (this.state.show !== newProps.show) {
 				this.setState({show: newProps.show});
+				
+			}
+			
+			if (this.state.image !== newProps.image) {
+				this.setState({image: newProps.image});
+				if (newProps.image != null) {
+					this.setState({
+						game: newProps.image.game,
+						name: newProps.image.name,
+						user: newProps.image.user,
+						date: newProps.image.date,
+						url: newProps.image.url
+					});
+				}	
 			}
 		}
 		
@@ -130,22 +145,24 @@ function predicateBy(prop){
 			);
 		}
 		
-		handleSubmit(e) { //TODO handle updating rows, getImage , saveImage, -bookstore 
+		handleSubmit(e) {
 			e.preventDefault();
 			
-			//toasters
-			toastr.success("OK! ");
-			toastr.error("401 ");
-			toastr.warning("Error submitting form! <br/> ");
+			this.state.image.game = this.state.game;
+			this.state.image.name = this.state.name;
+			this.state.image.user = this.state.user;
+			this.state.image.date = this.state.date;
+			this.state.image.url = this.state.url;
 			
-			console.log("image information: " + this.state.game + " " + this.state.name + " " + this.state.user + " " + this.state.date + " " + this.state.url);
-			this.setState({ show: false });
+			this.props.updateImage(this.state.image);
+			this.props.close();
+			this.setState({image: null});
 		}
 		
 		closeModal(e) {
 			e.preventDefault();
-			//TODO clear form?
-			this.setState({ show: false });
+			this.props.close();
+			this.setState({image: null});
 		}
 		
 		render() {
@@ -154,10 +171,10 @@ function predicateBy(prop){
 					<div className="modalForm">
 						<h3>Update image information</h3>
 						<form>
-							<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>
-							<input type="text" placeholder="Name" className="form-control" name="name" onChange={this.handleChange}/>
-							<input type="text" placeholder="User" className="form-control" name="user" onChange={this.handleChange}/>
-							<input type="text" placeholder="Date" className="form-control" name="date" onChange={this.handleChange}/>
+							<input type="text" placeholder="Game" className="form-control"  name="game" value={this.state.game} onChange={this.handleChange}/>
+							<input type="text" placeholder="Name" className="form-control" name="name" value={this.state.name} onChange={this.handleChange}/>
+							<input type="text" placeholder="User" className="form-control" name="user" value={this.state.user} onChange={this.handleChange}/>
+							<input type="text" placeholder="Date" className="form-control" name="date" value={this.state.date} onChange={this.handleChange}/>
 							
 							<button className="btn btn-success" onClick={this.handleSubmit}>Submit</button>
 							<button className="btn btn-info" onClick={this.closeModal}>Close</button>   
@@ -171,14 +188,18 @@ function predicateBy(prop){
 	class ImageControl extends React.Component {
 		constructor(props) {
 			super(props);
+			this.loadImageForUpdate = this.loadImageForUpdate.bind(this);
 			this.updateImage = this.updateImage.bind(this);
 			this.deleteImage = this.deleteImage.bind(this);
 			this.createImage = this.createImage.bind(this);
+			this.closeUpdate = this.closeUpdate.bind(this);
 			this.closeView = this.closeView.bind(this);
 			this.openView = this.openView.bind(this);
+			this.openUpdate = this.openUpdate.bind(this);
 			
 			this.state = {
 				images: [],
+				imageUpdate: null,
 				showModalView: false,
 				showUpdate: false,
 				modalImage: "",
@@ -201,6 +222,15 @@ function predicateBy(prop){
 							modalCaption: caption
 			});
 		}
+		//Update modal controls
+		openUpdate(image) {
+			this.setState({ showUpdate: true,
+							imageUpdate: image
+			});
+		}
+		closeUpdate() {
+			this.setState({ showUpdate: false });
+		}
 		
 		// Load images from database
 		loadImagesFromServer() {
@@ -213,19 +243,38 @@ function predicateBy(prop){
 			});
 		}
 		
-				
-		//update image TODO
-		updateImage(image){
+		//loadimage for update
+		loadImageForUpdate(image){
 			fetch (image._links.self.href,
 				{method: 'GET', credentials: 'same-origin'
 			}).then((response) => response.json()
 			).then((responseData) => {
-					console.log(responseData);
+					this.openUpdate(responseData);
 				}
 			)
-			.then(
-				res => this.loadImagesFromServer()
-			)
+			
+		}
+		
+		//update image
+		updateImage(image) {
+			fetch(image._links.self.href,
+				{
+					method: 'PUT',
+					credentials: 'same-origin',
+					headers: {'Content-Type': 'application/json'},
+					body: JSON.stringify(image)
+				}
+			).then((response) => {
+				if (response.ok) {
+					toastr.success("OK! ");
+					return response;
+				} else if (response.status == 401) {
+					toastr.error("401 ");
+				}
+				}, function (e) {
+					toastr.warning("Error submitting form! ");
+				}
+			).then(() => this.loadImagesFromServer());
 		}
 		
 		// Delete image
@@ -302,7 +351,7 @@ function predicateBy(prop){
 				<div>
 					{imageForm}
 					<ImageTable
-						updateImage={this.updateImage} 
+						loadImageForUpdate={this.loadImageForUpdate} 
 						deleteImage={this.deleteImage} 
 						images={this.state.images}
 						closeView={this.closeView}
@@ -318,6 +367,9 @@ function predicateBy(prop){
 					/>
 					<UpdateView
 						show={this.state.showUpdate}
+						image={this.state.imageUpdate}
+						close={this.closeUpdate}
+						updateImage={this.updateImage}
 					/>
 				</div>
 			);
@@ -359,7 +411,7 @@ function predicateBy(prop){
 				<Image
 					key={image._links.self.href} 
 					image={image}
-					updateImage={this.props.updateImage} 
+					loadImageForUpdate={this.props.loadImageForUpdate} 
 					deleteImage={this.props.deleteImage} 
 					closeView={this.props.closeView} 
 					openView={this.props.openView} 
@@ -400,14 +452,14 @@ function predicateBy(prop){
 	class Image extends React.Component {
 		constructor(props) {
 			super(props);
-			this.updateImage = this.updateImage.bind(this);
+			this.loadImageForUpdate = this.loadImageForUpdate.bind(this);
 			this.deleteImage = this.deleteImage.bind(this);
 			this.showImage = this.showImage.bind(this);
 		}
 
-		updateImage(e) {
+		loadImageForUpdate(e) {
 			e.stopPropagation();
-			this.props.updateImage(this.props.image);
+			this.props.loadImageForUpdate(this.props.image);
 		} 
 		
 		deleteImage(e) {
@@ -426,7 +478,7 @@ function predicateBy(prop){
 			if (this.props.type == 2){
 				updateBt = (
 					<td>
-						<button className="btn btn-success" onClick={this.updateImage}>Update</button>
+						<button className="btn btn-success" onClick={this.loadImageForUpdate}>Update</button>
 					</td>
 				);
 				deleteBt = (
@@ -540,6 +592,7 @@ function predicateBy(prop){
 		}
 	}
 	
+	/*
 	class Categories extends React.Component { //TODO & implementation
 		render() {
 			return (
@@ -549,7 +602,7 @@ function predicateBy(prop){
 				</div>
 			);
 		}
-	}
+	}*/
 /*-----COMMON PAGE COMPONENTS-----*/
 	/*-----Header-----*/
 		class Header extends React.Component {
@@ -608,9 +661,7 @@ function predicateBy(prop){
 				return (
 					<div>
 						<h2>Welcome</h2>
-						<p>Welcome text, information of the site</p>
-						<br />
-						<p>Create Read Update Delete, New User</p>
+						<p>Demo project, trying out technologies</p>
 					</div>
 				);
 			}
@@ -636,7 +687,7 @@ function predicateBy(prop){
 				return (
 					<div>
 						<h2>Upload</h2>
-						<p>Registered USER.level permissions <br />Read,Create,(Delete,(Update))</p>
+						<p>Registered USER.level permissions <br />Read,Create,<br />user's pictures:(Update, Hide)</p>
 						<ImageControl type={1} />
 					</div>
 				)
@@ -648,7 +699,7 @@ function predicateBy(prop){
 				return (
 					<div>
 						<h2>Manage</h2>
-						<p>Admin.level permissions <br />Read,Create</p>
+						<p>Admin.level permissions <br />Read,Update,Delete,(Hide)</p>
 						<ImageControl type={2} />
 					</div>
 				)
