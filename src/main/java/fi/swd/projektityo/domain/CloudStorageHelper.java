@@ -90,7 +90,7 @@ public class CloudStorageHelper {
 			Image image = new Image(dtString,url);
 			return image;
 		} catch (Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 			return null;
 		}		
 	}

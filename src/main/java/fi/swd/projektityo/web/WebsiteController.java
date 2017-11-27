@@ -1,9 +1,9 @@
 package fi.swd.projektityo.web;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,7 +23,6 @@ import fi.swd.projektityo.domain.Image;
 import fi.swd.projektityo.domain.ImageRepository;
 import fi.swd.projektityo.domain.User;
 import fi.swd.projektityo.domain.UserRepository;
-import fi.swd.projektityo.web.error.EmailExistsException;
 
 @Controller
 public class WebsiteController {
@@ -50,36 +49,41 @@ public class WebsiteController {
         return "signup";
     }
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public ModelAndView registerUserAccount
+    public String registerUserAccount
           (@ModelAttribute("user") @Valid UserDto accountDto, 
-          BindingResult result, WebRequest request, Errors errors)
-    {    	
-    	if (true) { //!result.hasErrors()
-        	registerNewUserAccount(accountDto);            
+          BindingResult result, WebRequest request, Errors errors, Model model)
+    {
+    	boolean registerSuccess = false; 
+    	if (!result.hasErrors()) {
+        	registerSuccess = registerNewUserAccount(accountDto);            
         }
         
-        if (result.hasErrors()) {
-            return new ModelAndView("signup", "user", accountDto);
+        if (result.hasErrors() || !registerSuccess) {
+        	model.addAttribute("nameTaken","Use different username");
+        	return "signup";
         } 
         else { //TODO, give username to loginpage
-            return new ModelAndView("login", "user", accountDto);
+        	return "login";
         }
     }
     
-    private User registerNewUserAccount(UserDto accountDto) { //TODO , implement into services()
-    	String email = accountDto.getEmail();
-    	boolean emailBoolean = emailExist(email);
-		if (emailBoolean) {
-			throw new EmailExistsException("There is an account with that email address: " + accountDto.getEmail());
+    private boolean registerNewUserAccount(UserDto accountDto) { //TODO, move to services
+    	if (userExist(accountDto.getUsername())) {
+    		System.out.println("username used");
+    		return false;
+    	}else if (emailExist(accountDto.getEmail())) {
+			//throw new EmailExistsException("There is an account with that email address: " + accountDto.getEmail());
+    		System.out.println("email registered");
+			return false;
+		}else {
+			final User user = new User();
+			user.setUsername(accountDto.getUsername());
+			user.setPasswordHash(passwordEncoder.encode(accountDto.getPassword()));
+			user.setEmail(accountDto.getEmail());
+			user.setRole("ROLE_USER");
+			urepository.save(user);
+			return true;
 		}
-		final User user = new User();
-		user.setUsername(accountDto.getUsername());
-		String password = passwordEncoder.encode(accountDto.getPassword());
-		user.setPasswordHash(password);
-		user.setEmail(accountDto.getEmail());
-		user.setRole("ROLE_USER");
-		urepository.save(user);
-		return user;
     }
     private boolean emailExist(String email) {
 		User user = null;
@@ -94,28 +98,41 @@ public class WebsiteController {
         }
         return false;
     }
+    private boolean userExist(String username) {
+		User user = null;
+        try {
+        	user = urepository.findByUsername(username);			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        
+        if (user != null) {
+            return true;
+        }
+        return false;
+    }
     
 //Image upload request
     @RequestMapping(value="/upload", method=RequestMethod.POST)
-    public @ResponseBody Image handleFileUpload(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
-    	return firebase.uploadFile(file, name); 
+    public @ResponseBody Image handleFileUpload(@RequestParam("name") String name, @RequestParam("file") MultipartFile file, HttpServletRequest httpServletRequest) {
+    	Image additionalInformation = firebase.uploadFile(file, name);
+
+    	//username from request
+    	String username = null;
+		try {username = httpServletRequest.getRemoteUser();
+		} catch (Exception e) {}
+		if (username == null){
+			System.out.println(username);
+			username = "null";
+		}
+		
+		additionalInformation.setUser(username);
+		return additionalInformation;
     }
     
-//unnecessary Rest methods
-/*
-	@RequestMapping(value = "/images", method = RequestMethod.GET)
-	public @ResponseBody List<Image> ImagelistJson() {
-		return (List<Image>) repository.findAll();
-	}
-	
-	@RequestMapping (value = "/image/{id}", method = RequestMethod.GET)
-	public @ResponseBody Image getImageJson(@PathVariable("id") Long ImageId) {
-		return repository.findOne(ImageId);
-	}    	
-*/
 //React catch all (must be last to catch, TODO edit to match only possible pages)
 	@RequestMapping(value = {"*"}, method = RequestMethod.GET)
-  	public String index() {
+  	public String index(HttpServletRequest httpServletRequest) {
   		return "/index";
 	}
 

@@ -74,6 +74,7 @@ footer {
 
 
 /*table and form*/
+table {position: relative;}
 tbody tr {
     background: linear-gradient(white, #d5d5d5);
 }
@@ -175,6 +176,15 @@ tbody tr {
     cursor: pointer;
 }
 
+.tableLoading {
+    position: absolute;
+    background-color: rgba(10,10,10,0.3);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+}
 .spinner{
 	background-image: url('../img/spinner.gif');
 	padding: 2em;

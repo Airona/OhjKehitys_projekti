@@ -111,7 +111,8 @@ function predicateBy(prop){
 				images: [],
 				showModalView: false,
 				modalImage: "",
-				modalCaption: ""
+				modalCaption: "",
+				loading: false,
 			};
 		}
 		
@@ -152,6 +153,9 @@ function predicateBy(prop){
 	  
 		// Create new image
 		createImage(data ,image) {	//not optimal
+			
+			this.state.loading = true;
+			
 			fetch("http://localhost:8080/upload", {
 				credentials: 'same-origin',
 				mode: 'no-cors',
@@ -163,6 +167,7 @@ function predicateBy(prop){
 				body: data
 			}).then((response) => response.json()
 			).then((responseData) => {
+					image.user = responseData.user;
 					image.date = responseData.date;
 					image.url = responseData.url;
 					return image;
@@ -174,7 +179,10 @@ function predicateBy(prop){
 							'Content-Type': 'application/json',
 						},
 						body: JSON.stringify(image)
-					}).then(() => {this.loadImagesFromServer();})
+					}).then(() => {
+						this.loadImagesFromServer();
+						this.state.loading = false;
+						})
 				}
 			);
 			
@@ -195,7 +203,7 @@ function predicateBy(prop){
 		}
 		
 		render() {
-			/*show only for user uploads, type=1*/
+			/*show only for user uploads, type=1, !bad way for conditional rendering (use switch, or other alike)*/
 			var imageForm;
 			if (this.props.type == 1){
 				imageForm = <ImageForm createImage={this.createImage}/>
@@ -210,6 +218,7 @@ function predicateBy(prop){
 						closeView={this.closeView}
 						openView={this.openView}
 						type={this.props.type}
+						loading={this.state.loading}
 					/>
 					<ModalView
 						show={this.state.showModalView}
@@ -221,10 +230,20 @@ function predicateBy(prop){
 			);
 		}
 	}
-		
+	
 	class ImageTable extends React.Component {
 		constructor(props) {
 			super(props);
+			
+			this.state = {
+				loading: false,
+			}
+		}
+		
+		componentWillReceiveProps(newProps) {
+			if (this.state.loading !== newProps.loading) {
+				this.setState({loading: newProps.loading});
+			}
 		}
 		
 		render() {
@@ -253,10 +272,18 @@ function predicateBy(prop){
 					type={this.props.type}
 				/>
 			);
-
+			
+			let loader;
+			if (this.props.loading) {
+				<div className="tableLoading">
+					<span className="spinner"></span>
+				</div>
+			}
+			
 			return (
 			<div className={(this.props.type == 1 ? 'tableDivWithForm' : '')}>
 			  <table className="table">
+				{loader}
 				<thead>
 				  <tr>
 					<th>Game</th>
@@ -269,7 +296,8 @@ function predicateBy(prop){
 				</thead>
 				<tbody>{images}</tbody>
 			  </table>
-			  </div>);
+			</div>
+		  );
 		}
 	}
 			
@@ -332,8 +360,8 @@ function predicateBy(prop){
 				file: '',
 				imagePreviewUrl: '',
 			};
-			this.handleSubmit = this.handleSubmit.bind(this);   
-			this.handleChange = this.handleChange.bind(this);     
+			this.handleSubmit = this.handleSubmit.bind(this);
+			this.handleChange = this.handleChange.bind(this);
 		}
 		
 		handleImageChange(e) {
@@ -372,8 +400,12 @@ function predicateBy(prop){
 				url: this.state.url		/*system image upload (return url)*/
 			};
 			
-			console.log('handle uploading-', this.state.file);
-			this.props.createImage(data, newImage);        
+			//console.log('handle uploading-', this.state.file);
+			this.props.createImage(data, newImage);
+			this.clearForm();
+		}
+		
+		clearForm() {//TODO?
 		}
 		
 		render() {

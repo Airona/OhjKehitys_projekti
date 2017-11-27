@@ -12,6 +12,7 @@
 	<div style="text-align:center;">
 		<h1>Sign-up</h1>
 		<form action="#" th:action="@{/signup}" th:object="${user}" method="post" enctype="utf8">
+			<p th:if="${nameTaken} != null" th:text="${nameTaken}"></p>
 			<div>
 				<label>Username:
 					<input th:field="*{username}" class="form-control" />
@@ -40,6 +41,10 @@
 		<br />
 		<div>
 			<a th:href="@{/login.html}">Login</a>
+		</div>
+		<br />
+		<div>
+			<a href="/" class="btn btn-info">Go Back</a>
 		</div>
 	</div>
 </body>
