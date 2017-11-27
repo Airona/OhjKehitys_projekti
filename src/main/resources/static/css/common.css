@@ -74,7 +74,6 @@ footer {
 
 
 /*table and form*/
-table {position: relative;}
 tbody tr {
     background: linear-gradient(white, #d5d5d5);
 }
@@ -88,7 +87,7 @@ tbody tr {
 }
 
 .formDiv {float:left; width:200px}
-.tableDivWithForm {margin-left:200px; width:auto;}
+.tableDivWithForm {margin-left:200px; width:auto;position:relative;}
 
 @media screen and (max-width: 600px) {
 	.formDiv {float:none;}
@@ -128,6 +127,20 @@ tbody tr {
     max-width: calc(100% - 2em);
 	max-height: calc(100% - 3em);
 }
+.modalForm {
+    background-color: white;
+    max-width: 500px;
+    margin: auto;
+    border-radius: 5px;
+    padding-top: 1em;
+}
+	.modalForm .btn {margin:1em;}
+	.modalForm .form-control {
+		width: 80% !important;
+		margin: auto;
+		margin-top: 0.5em;
+	}
+	
 
 /* Caption of Modal Image (Image Text) - Same Width as the Image */
 #caption {

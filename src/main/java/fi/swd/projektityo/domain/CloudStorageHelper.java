@@ -85,7 +85,6 @@ public class CloudStorageHelper {
 							file.getInputStream());
 			
 			// return the public download link
-			System.out.println(blobInfo.getMediaLink());
 			String url = blobInfo.getMediaLink();
 			Image image = new Image(dtString,url);
 			return image;

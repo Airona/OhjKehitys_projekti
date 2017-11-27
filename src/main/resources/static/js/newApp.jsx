@@ -7,6 +7,7 @@ const Prompt =  window.ReactRouterDOM.Prompt;
 const Switch = window.ReactRouterDOM.Switch;
 const Redirect = window.ReactRouterDOM.Redirect;
 
+
 /*toastr options*/
 toastr.options.positionClass = 'toast-top-left';
 toastr.options.progressBar = true;
@@ -99,9 +100,78 @@ function predicateBy(prop){
 		}
 	}
 	
+	class UpdateView extends React.Component {
+		constructor(props) {
+			super(props);
+			this.closeModal = this.closeModal.bind(this);
+			this.handleSubmit = this.handleSubmit.bind(this);
+			this.handleChange = this.handleChange.bind(this);
+			
+			this.state = {
+				show: false,
+				
+				game: '',
+				name: '',
+				user: '',
+				date: '',
+				url: '',
+			};
+		}
+		
+		componentWillReceiveProps(newProps) {
+			if (this.state.show !== newProps.show) {
+				this.setState({show: newProps.show});
+			}
+		}
+		
+		handleChange(e) {
+			this.setState(
+				{[e.target.name]: e.target.value}
+			);
+		}
+		
+		handleSubmit(e) { //TODO handle updating rows, getImage , saveImage, -bookstore 
+			e.preventDefault();
+			
+			//toasters
+			toastr.success("OK! ");
+			toastr.error("401 ");
+			toastr.warning("Error submitting form! <br/> ");
+			
+			console.log("image information: " + this.state.game + " " + this.state.name + " " + this.state.user + " " + this.state.date + " " + this.state.url);
+			this.setState({ show: false });
+		}
+		
+		closeModal(e) {
+			e.preventDefault();
+			//TODO clear form?
+			this.setState({ show: false });
+		}
+		
+		render() {
+			return(
+				<div className="modalView" style={this.state.show ? {display: 'block'} : {null} }>
+					<div className="modalForm">
+						<h3>Update image information</h3>
+						<form>
+							<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>
+							<input type="text" placeholder="Name" className="form-control" name="name" onChange={this.handleChange}/>
+							<input type="text" placeholder="User" className="form-control" name="user" onChange={this.handleChange}/>
+							<input type="text" placeholder="Date" className="form-control" name="date" onChange={this.handleChange}/>
+							
+							<button className="btn btn-success" onClick={this.handleSubmit}>Submit</button>
+							<button className="btn btn-info" onClick={this.closeModal}>Close</button>   
+						</form>
+					</div>
+				</div>
+			);
+		}
+	}
+	
 	class ImageControl extends React.Component {
 		constructor(props) {
 			super(props);
+			this.updateImage = this.updateImage.bind(this);
 			this.deleteImage = this.deleteImage.bind(this);
 			this.createImage = this.createImage.bind(this);
 			this.closeView = this.closeView.bind(this);
@@ -110,6 +180,7 @@ function predicateBy(prop){
 			this.state = {
 				images: [],
 				showModalView: false,
+				showUpdate: false,
 				modalImage: "",
 				modalCaption: "",
 				loading: false,
@@ -142,6 +213,21 @@ function predicateBy(prop){
 			});
 		}
 		
+				
+		//update image TODO
+		updateImage(image){
+			fetch (image._links.self.href,
+				{method: 'GET', credentials: 'same-origin'
+			}).then((response) => response.json()
+			).then((responseData) => {
+					console.log(responseData);
+				}
+			)
+			.then(
+				res => this.loadImagesFromServer()
+			)
+		}
+		
 		// Delete image
 		deleteImage(image) {
 			fetch (image._links.self.href,
@@ -154,7 +240,7 @@ function predicateBy(prop){
 		// Create new image
 		createImage(data ,image) {	//not optimal
 			
-			this.state.loading = true;
+			this.setState({loading: true});
 			
 			fetch("http://localhost:8080/upload", {
 				credentials: 'same-origin',
@@ -165,6 +251,16 @@ function predicateBy(prop){
 				"type": "formData"
 				},
 				body: data
+			}).then((response) => {
+				if (response.status == 401) {
+					toastr.error("401 ");
+					return;
+				}else {
+					return response;
+				}
+			}, function (e) {
+				toastr.warning("Error submitting form! <br/>" + e);
+				return;
 			}).then((response) => response.json()
 			).then((responseData) => {
 					image.user = responseData.user;
@@ -179,27 +275,20 @@ function predicateBy(prop){
 							'Content-Type': 'application/json',
 						},
 						body: JSON.stringify(image)
+					}).then((response) => {
+						if (response.ok) {
+							toastr.success("OK! ");
+						} else if (response.status == 401) {
+							toastr.error("401 ");
+						}
+					}, function (e) {
+						toastr.warning("Error submitting form! <br/>" + e);
 					}).then(() => {
 						this.loadImagesFromServer();
-						this.state.loading = false;
-						})
-				}
-			);
-			
-			/*
-			.then(
-				function (response) {
-					if (response.ok) {
-						toastr.success("OK! ");
-					} else if (response.status == 401) {
-						toastr.error("401 ");
-					}
-				}, function (e) {
-					toastr.warning("Error submitting form! <br/>" + e);
+						this.setState({loading: false});
+					})
 				}
 			)
-			*/
-			
 		}
 		
 		render() {
@@ -213,6 +302,7 @@ function predicateBy(prop){
 				<div>
 					{imageForm}
 					<ImageTable
+						updateImage={this.updateImage} 
 						deleteImage={this.deleteImage} 
 						images={this.state.images}
 						closeView={this.closeView}
@@ -225,6 +315,9 @@ function predicateBy(prop){
 						close={this.closeView}
 						imageUrl={this.state.modalImage}
 						caption={this.state.modalCaption}
+					/>
+					<UpdateView
+						show={this.state.showUpdate}
 					/>
 				</div>
 			);
@@ -266,6 +359,7 @@ function predicateBy(prop){
 				<Image
 					key={image._links.self.href} 
 					image={image}
+					updateImage={this.props.updateImage} 
 					deleteImage={this.props.deleteImage} 
 					closeView={this.props.closeView} 
 					openView={this.props.openView} 
@@ -274,16 +368,18 @@ function predicateBy(prop){
 			);
 			
 			let loader;
-			if (this.props.loading) {
-				<div className="tableLoading">
-					<span className="spinner"></span>
-				</div>
+			if (this.state.loading) {
+				loader = (
+					<div className="tableLoading">
+						<span className="spinner"></span>
+					</div>
+				);
 			}
 			
 			return (
 			<div className={(this.props.type == 1 ? 'tableDivWithForm' : '')}>
+			{loader}
 			  <table className="table">
-				{loader}
 				<thead>
 				  <tr>
 					<th>Game</th>
@@ -304,10 +400,16 @@ function predicateBy(prop){
 	class Image extends React.Component {
 		constructor(props) {
 			super(props);
+			this.updateImage = this.updateImage.bind(this);
 			this.deleteImage = this.deleteImage.bind(this);
 			this.showImage = this.showImage.bind(this);
 		}
 
+		updateImage(e) {
+			e.stopPropagation();
+			this.props.updateImage(this.props.image);
+		} 
+		
 		deleteImage(e) {
 			e.stopPropagation();
 			this.props.deleteImage(this.props.image);
@@ -324,7 +426,7 @@ function predicateBy(prop){
 			if (this.props.type == 2){
 				updateBt = (
 					<td>
-						<button className="btn btn-success" onClick={this.deleteImage}>Update</button>
+						<button className="btn btn-success" onClick={this.updateImage}>Update</button>
 					</td>
 				);
 				deleteBt = (
@@ -339,7 +441,7 @@ function predicateBy(prop){
 				<td>{this.props.image.game}</td>
 				<td>{this.props.image.name}</td>
 				<td>{this.props.image.user}</td>
-				<td>{this.props.image.date}</td>
+				<td>{this.props.image.date.substring(0,10)}</td>
 				{updateBt}
 				{deleteBt}
 			  </tr>
@@ -388,24 +490,25 @@ function predicateBy(prop){
 		
 		handleSubmit(e) {
 			e.preventDefault();
+			
+			if (this.state.file == '' || 
+				this.state.game == '' || 
+				this.state.name == ''){
+				toastr.warning("Check form fields!");
+				return;
+			}
+			
 			var data = new FormData();
 			data.append("file", this.state.file);
 			data.append("name", this.state.file.name);
 			
 			var newImage = {
-				game: this.state.game,	/*user input (dropdown) or new as (text)*/
+				game: this.state.game,	/*user input new as (text) or TODO(dropdown)*/
 				name: this.state.name,	/*user input (text)*/
-				user: this.state.user,	/*system logged user*/
-				date: this.state.date,	/*system upload date*/
-				url: this.state.url		/*system image upload (return url)*/
 			};
 			
 			//console.log('handle uploading-', this.state.file);
 			this.props.createImage(data, newImage);
-			this.clearForm();
-		}
-		
-		clearForm() {//TODO?
 		}
 		
 		render() {
@@ -420,16 +523,17 @@ function predicateBy(prop){
 			return (
 				<div className="panel panel-default formDiv">
 					<span>Upload an image</span>
-					<form className="form">
+					<form className="form" ref="form">
 							<input type="text" placeholder="Game" className="form-control"  name="game" onChange={this.handleChange}/>
 							<input type="text" placeholder="Name" className="form-control" name="name" onChange={this.handleChange}/>
+							<br />
 							<input className="fileInput" type="file" onChange={(e)=>this.handleImageChange(e)} />
-							
+							<br />
 							<button className="btn btn-success" onClick={this.handleSubmit}>Upload</button>   
 							
 							<div className="imgPreview">
 								{$imagePreview}
-							</div>    
+							</div>
 					</form>   
 				</div>
 			);
@@ -532,7 +636,7 @@ function predicateBy(prop){
 				return (
 					<div>
 						<h2>Upload</h2>
-						<p>Registered USER.level permissions <br />Read,Create,Delete,(Update)</p>
+						<p>Registered USER.level permissions <br />Read,Create,(Delete,(Update))</p>
 						<ImageControl type={1} />
 					</div>
 				)

@@ -114,16 +114,16 @@ public class WebsiteController {
     
 //Image upload request
     @RequestMapping(value="/upload", method=RequestMethod.POST)
-    public @ResponseBody Image handleFileUpload(@RequestParam("name") String name, @RequestParam("file") MultipartFile file, HttpServletRequest httpServletRequest) {
+    public @ResponseBody Image handleFileUpload(@RequestParam("name") String name, @RequestParam("file") MultipartFile file, HttpServletRequest httpServletRequest){
     	Image additionalInformation = firebase.uploadFile(file, name);
-
+    	
     	//username from request
     	String username = null;
 		try {username = httpServletRequest.getRemoteUser();
 		} catch (Exception e) {}
 		if (username == null){
 			System.out.println(username);
-			username = "null";
+			username = "guest";
 		}
 		
 		additionalInformation.setUser(username);
