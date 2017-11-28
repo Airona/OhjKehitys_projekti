@@ -687,7 +687,7 @@ function predicateBy(prop){
 				return (
 					<div>
 						<h2>Upload</h2>
-						<p>Registered USER.level permissions <br />Read,Create,<br />user's pictures:(Update, Hide)</p>
+						<p>Registered USER.level permissions, (adds registered user email instead of name?) <br />Read,Create,<br />user's pictures:(Update, Hide)</p>
 						<ImageControl type={1} />
 					</div>
 				)
